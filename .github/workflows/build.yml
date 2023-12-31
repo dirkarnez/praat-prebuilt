@@ -62,15 +62,6 @@ jobs:
           
       # - shell: cmd
       #   run: |
-      #     cd ${{ env.libraryName }} &&^
-      #     dir &&^
-      #     "${{ github.workspace }}\PortableGit-2.38.1-64-bit\usr\bin\sed.exe" -i "s/cmake_minimum_required(VERSION\s\+2.6.0)/cmake_minimum_required(VERSION 3.7)/g" CMakeLists.txt &&^
-      #     "${{ github.workspace }}\PortableGit-2.38.1-64-bit\usr\bin\sed.exe" -i "s/find_package(OpenSSL)/find_package(OpenSSL CONFIG REQUIRED)/g" CMakeLists.txt &&^
-      #     "${{ github.workspace }}\PortableGit-2.38.1-64-bit\usr\bin\sed.exe" -i "s/add_subdirectory(doc)//g" CMakeLists.txt &&^
-      #     type CMakeLists.txt
-          
-      # - shell: cmd
-      #   run: |
       #     curl https://github.com/dirkarnez/openssl-prebuilt/releases/download/v3.1.3/openssl-v3.1.3-x86_64-8.1.0-release-posix-seh-rt_v6-rev0.zip -L -O &&^
       #     7z.exe x openssl-v3.1.3-x86_64-8.1.0-release-posix-seh-rt_v6-rev0.zip -o"openssl-v3.1.3-x86_64-8.1.0-release-posix-seh-rt_v6-rev0"
 
@@ -107,6 +98,16 @@ jobs:
         run: |
             cd ${{ env.libraryName }} &&^
             copy ".\makefiles\makefile.defs.mingw64" makefile.defs
+
+      - shell: cmd
+        if: ${{ matrix.compiler.url }}
+        run: |
+          cd ${{ env.libraryName }} &&^
+          dir &&^
+          "${{ github.workspace }}\PortableGit-2.38.1-64-bit\usr\bin\sed.exe" -i "s/\$(PREFIX)ar/\$(PREFIX)gcc-ar/g" makefile.defs &&^
+          "${{ github.workspace }}\PortableGit-2.38.1-64-bit\usr\bin\sed.exe" -i "s/\$(PREFIX)ranlib/\$(PREFIX)gcc-ranlib/g" makefile.defs &&^
+          "${{ github.workspace }}\PortableGit-2.38.1-64-bit\usr\bin\sed.exe" -i "s/\$(PREFIX)windres/windres/g" makefile.defs &&^
+          type makefile.defs
             
       - name: set PATH, check mingw version, cmake generate, build and install
         if: ${{ matrix.compiler.url }}
