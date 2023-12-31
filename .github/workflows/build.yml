@@ -94,24 +94,30 @@ jobs:
       #       -DBUILD_SHARED_LIBS=OFF ^
       #       -DCMAKE_INSTALL_PREFIX="cmake-build/${{ env.cmakeInstallationPath }}" -B./cmake-build &&^
       #       cd cmake-build && cmake --build . --config Release && cmake --install . 
-            
+
+      - name: Install MSYS2
+        if: ${{ matrix.compiler.url }}
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+
       - name: set PATH, check mingw version, cmake generate, build and install
         if: ${{ matrix.compiler.url }}
         shell: cmd
         run: |
-            set PATH=^
-            ${{ github.workspace }}\mingw64;^
-            ${{ github.workspace }}\mingw64\bin;^
-            ${{ github.workspace }}\cmake-3.24.0-windows-x86_64\bin;
-            set CD_LINUX=%CD:\=/%
-            gcc --version &&^
             cd ${{ env.libraryName }} &&^
-            copy ".\makefiles\makefile.defs.mingw64" makefile.defs &&^
+            copy ".\makefiles\makefile.defs.mingw64" makefile.defs
+            
+      - name: set PATH, check mingw version, cmake generate, build and install
+        if: ${{ matrix.compiler.url }}
+        shell: msys2 {0}
+        run: |
+            workspace=$(pwd) &&
+            export PATH="$workspace/mingw64:$workspace/mingw64/bin:$workspace/msys64/usr/bin:/usr/bin" &&
+            cd ${{ env.libraryName }} && 
+            g++ --version && 
             mingw32-make.exe
-
-
-
- 
+            
   # -DOpenSSL_DIR="%CD_LINUX%/openssl-v3.1.3-x86_64-8.1.0-release-posix-seh-rt_v6-rev0" ^
   # -DZLIB_ROOT="%CD_LINUX%/zlib-v1.2.13-mingw64-x86_64-posix-seh-rev0-8.1.0" ^
   # -DZLIB_USE_STATIC_LIBS=ON ^
